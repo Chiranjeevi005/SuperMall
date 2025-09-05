@@ -6,16 +6,44 @@ import { config } from 'dotenv';
 // Load environment variables
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Try to load .env.local first, then fallback to .env
 config({ path: path.resolve(__dirname, '../../.env.local') });
+config({ path: path.resolve(__dirname, '../../.env') });
 
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/supermall');
-    console.log('MongoDB connected');
+    console.log('Attempting to connect to MongoDB...');
+    console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Present' : 'Missing');
+    
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined in environment variables');
+    }
+    
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('✅ MongoDB connected successfully');
+    return true;
   } catch (err) {
-    console.error('Database connection error:', err);
-    process.exit(1);
+    console.error('❌ Database connection error:', err);
+    return false;
+  }
+};
+
+// Check if database is already seeded
+const isDatabaseSeeded = async () => {
+  try {
+    const categoriesCount = await mongoose.connection.db.collection('categories').countDocuments();
+    const vendorsCount = await mongoose.connection.db.collection('vendors').countDocuments();
+    const productsCount = await mongoose.connection.db.collection('products').countDocuments();
+    
+    console.log(`Current database counts - Categories: ${categoriesCount}, Vendors: ${vendorsCount}, Products: ${productsCount}`);
+    
+    // If we have data in all collections, consider it seeded
+    return categoriesCount > 0 && vendorsCount > 0 && productsCount > 0;
+  } catch (err) {
+    console.error('Error checking database seeding status:', err);
+    return false;
   }
 };
 
@@ -787,8 +815,22 @@ const productsData = {
 // Function to seed all data
 const seedAllData = async () => {
   try {
+    console.log('Starting database seeding process...');
+    
     // Connect to database
-    await connectDB();
+    const isConnected = await connectDB();
+    if (!isConnected) {
+      console.error('Failed to connect to database. Exiting...');
+      process.exit(1);
+    }
+    
+    // Check if database is already seeded
+    const alreadySeeded = await isDatabaseSeeded();
+    if (alreadySeeded && process.env.NODE_ENV === 'production') {
+      console.log('Database already seeded. Skipping...');
+      await mongoose.connection.close();
+      process.exit(0);
+    }
     
     // Define schemas directly in the script to avoid import issues
     const categorySchema = new mongoose.Schema({
@@ -945,12 +987,14 @@ const seedAllData = async () => {
     const Vendor = mongoose.models.Vendor || mongoose.model('Vendor', vendorSchema);
     const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
     
-    // Clear existing data
-    await Category.deleteMany({});
-    await Product.deleteMany({});
-    await Vendor.deleteMany({});
-    
-    console.log('Cleared existing data');
+    // Clear existing data only in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Clearing existing data...');
+      await Category.deleteMany({});
+      await Product.deleteMany({});
+      await Vendor.deleteMany({});
+      console.log('Cleared existing data');
+    }
     
     // Drop indexes to avoid duplicate key errors
     try {
@@ -997,9 +1041,11 @@ const seedAllData = async () => {
     
     console.log(`Created ${totalProducts} products across ${categories.length} categories`);
     console.log('Seeding completed successfully!');
+    await mongoose.connection.close();
     process.exit(0);
   } catch (error) {
     console.error('Error seeding data:', error);
+    await mongoose.connection.close();
     process.exit(1);
   }
 };

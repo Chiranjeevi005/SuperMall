@@ -17,6 +17,7 @@
     "seed:products": "node src/scripts/seedProducts.js",
     "seed:all": "node src/scripts/seedAllData.js",
     "verify:data": "node src/scripts/verifyData.js",
+    "postinstall": "node src/scripts/seedAllData.js",
     "reset:orders": "node reset-orders.js",
     "remove:orderNumber-index": "node remove-orderNumber-index.cjs",
     "check:orderNumber-index": "node check-and-remove-orderNumber-index.cjs",
