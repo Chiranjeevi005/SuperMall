@@ -23,6 +23,9 @@ export default function VendorsPage() {
   const [selectedRating, setSelectedRating] = useState('all');
   const [loading, setLoading] = useState(true);
 
+  // Use the Render backend URL for API calls
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://supermall-cevd.onrender.com';
+
   // Get unique floors and categories for filters
   const floors = ['all', ...new Set(vendors.map(vendor => vendor.floor.toString()))];
   const categories = ['all', ...new Set(vendors.map(vendor => vendor.category))];
@@ -66,7 +69,7 @@ export default function VendorsPage() {
   const fetchVendors = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/vendors');
+      const response = await fetch(`${API_BASE_URL}/api/vendors`);
       const data = await response.json();
       setVendors(data.vendors);
       setFilteredVendors(data.vendors);

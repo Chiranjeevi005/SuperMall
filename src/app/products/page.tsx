@@ -37,11 +37,14 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
+  // Use the Render backend URL for API calls
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://supermall-cevd.onrender.com';
+
   // Fetch all categories on component mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/categories');
+        const response = await fetch(`${API_BASE_URL}/api/categories`);
         const data = await response.json();
         
         if (response.ok) {
@@ -80,7 +83,7 @@ export default function ProductsPage() {
         queryParams.append('sortBy', sortBy);
         queryParams.append('sortOrder', sortOrder);
         
-        const response = await fetch(`/api/products?${queryParams.toString()}`);
+        const response = await fetch(`${API_BASE_URL}/api/products?${queryParams.toString()}`);
         const data = await response.json();
         
         if (response.ok) {

@@ -11,6 +11,9 @@ const OrderTrackingPage = () => {
   const [currentStatus, setCurrentStatus] = useState('pending');
   const [error, setError] = useState<string | null>(null);
 
+  // Use the Render backend URL for API calls
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://supermall-cevd.onrender.com';
+
   // Get search params in a safe way
   useEffect(() => {
     try {
@@ -33,7 +36,7 @@ const OrderTrackingPage = () => {
         }
         
         // Fetch order from API
-        const response = await fetch(`/api/orders/${orderId}`);
+        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`);
         const data = await response.json();
         
         if (!response.ok) {
@@ -194,7 +197,7 @@ const OrderTrackingPage = () => {
   const refreshStatus = async () => {
     try {
       // Fetch updated order status from the API
-      const response = await fetch(`/api/orders/${orderId}`);
+      const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`);
       const data = await response.json();
       
       if (response.ok) {

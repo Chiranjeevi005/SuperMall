@@ -43,7 +43,8 @@
     "test:app-context": "node app-context-test.cjs",
     "test:final": "node final-test.cjs",
     "test:reproduce-duplicate": "node reproduce-duplicate-error.cjs",
-    "check:app-database": "node check-app-database.cjs"
+    "check:app-database": "node check-app-database.cjs",
+    "deploy:vercel:local": "node deploy-vercel-local.js"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^4.0.0",

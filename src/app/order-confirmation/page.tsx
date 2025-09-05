@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 
 const OrderConfirmationPage = () => {
   // Wrap useSearchParams in a try/catch to handle SSR
@@ -12,6 +11,9 @@ const OrderConfirmationPage = () => {
   const [showNotification, setShowNotification] = useState(true);
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use the Render backend URL for API calls
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://supermall-cevd.onrender.com';
 
   // Get search params in a safe way
   useEffect(() => {
@@ -35,7 +37,7 @@ const OrderConfirmationPage = () => {
         }
         
         // Fetch order from API
-        const response = await fetch(`/api/orders/${orderId}`);
+        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`);
         const data = await response.json();
         
         if (!response.ok) {

@@ -6,6 +6,26 @@ A comprehensive e-commerce web application built with Next.js 15+, MongoDB, and 
 
 This application is production-ready! Follow the [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed deployment instructions.
 
+## 🌐 Vercel Frontend with Render Backend Deployment
+
+You can deploy the frontend to Vercel and use Render as your backend service. We've already configured:
+
+1. **API Routes**: All frontend API calls are configured to use your Render backend URL
+2. **Environment Variables**: Set up to work with external backend services
+3. **Vercel Configuration**: [vercel.json](vercel.json) is configured to proxy API requests to your Render backend
+
+To deploy:
+
+1. Deploy your backend to Render first
+2. Note your Render backend URL
+3. Deploy the frontend to Vercel
+4. Set the `NEXT_PUBLIC_API_URL` environment variable in Vercel to your Render backend URL
+
+Run the local verification script:
+```bash
+npm run deploy:vercel:local
+```
+
 ## 📋 Quick Start
 
 1. **Install Dependencies**:
@@ -123,6 +143,7 @@ src/
 - [PAYMENT_FLOW.md](PAYMENT_FLOW.md) - Payment flow documentation
 - [PROJECT_ENHANCEMENTS.md](PROJECT_ENHANCEMENTS.md) - Summary of all project enhancements
 - [RUNNING_THE_APP.md](RUNNING_THE_APP.md) - Instructions for running the application
+- [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) - Deploying frontend to Vercel with Render backend
 
 ## 🤝 Support
 

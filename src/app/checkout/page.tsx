@@ -26,6 +26,9 @@ const CheckoutPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Use the Render backend URL for API calls
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://supermall-cevd.onrender.com';
+
   // Redirect to cart if cart is empty
   useEffect(() => {
     if (cartState.items.length === 0 && typeof window !== 'undefined') {
@@ -80,7 +83,7 @@ const CheckoutPage = () => {
         paymentStatus: 'pending'
       };
 
-      const orderResponse = await fetch('/api/orders', {
+      const orderResponse = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,7 +100,7 @@ const CheckoutPage = () => {
       // For Stripe payments, create PaymentIntent and redirect to payment page
       if (paymentMethod === 'stripe') {
         // Create PaymentIntent
-        const paymentResponse = await fetch('/api/payment/intent', {
+        const paymentResponse = await fetch(`${API_BASE_URL}/api/payment/intent`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
