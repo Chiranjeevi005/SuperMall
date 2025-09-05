@@ -121,11 +121,18 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: unknown) {
     logger.error('Error fetching categories', { error: error instanceof Error ? error.message : 'Unknown error' });
-    // Return mock data as fallback
-    return NextResponse.json({
-      categories: mockCategories,
-      total: mockCategories.length
-    });
+    // Return mock data as fallback only in development
+    if (process.env.NODE_ENV !== 'production') {
+      return NextResponse.json({
+        categories: mockCategories,
+        total: mockCategories.length
+      });
+    }
+    // In production, return error
+    return NextResponse.json(
+      { error: 'Failed to fetch categories' },
+      { status: 500 }
+    );
   }
 }
 
@@ -135,7 +142,14 @@ export async function POST(request: NextRequest) {
     
     // Check if we have a real database connection
     if (!connection.connection || connection.connection.readyState !== 1) {
-      // Return success for mock creation
+      // In production, return error if no database connection
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json(
+          { error: 'Database connection failed' },
+          { status: 500 }
+        );
+      }
+      // Return success for mock creation in development
       return NextResponse.json({
         message: 'Category created successfully (mock)',
         category: {
@@ -190,7 +204,14 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     logger.error('Error creating category', { error: error instanceof Error ? error.message : 'Unknown error' });
-    // Return mock success even in error case
+    // In production, return error
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'Failed to create category' },
+        { status: 500 }
+      );
+    }
+    // Return mock success even in error case in development
     return NextResponse.json({
       message: 'Category created successfully (mock)',
       category: {

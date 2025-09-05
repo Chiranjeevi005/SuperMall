@@ -77,15 +77,24 @@ export async function GET(request: NextRequest) {
       const page = parseInt(searchParams.get('page') || '1');
       const limit = parseInt(searchParams.get('limit') || '10');
       
-      return NextResponse.json({
-        products: mockProducts.slice((page - 1) * limit, page * limit),
-        pagination: {
-          page,
-          limit,
-          total: mockProducts.length,
-          pages: Math.ceil(mockProducts.length / limit),
-        },
-      });
+      // Only return mock data in development
+      if (process.env.NODE_ENV !== 'production') {
+        return NextResponse.json({
+          products: mockProducts.slice((page - 1) * limit, page * limit),
+          pagination: {
+            page,
+            limit,
+            total: mockProducts.length,
+            pages: Math.ceil(mockProducts.length / limit),
+          },
+        });
+      }
+      
+      // In production, return error if no database connection
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
     }
     
     // Get query parameters for filtering
@@ -144,20 +153,28 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: unknown) {
     logger.error('Error fetching products', { error: error instanceof Error ? error.message : 'Unknown error' });
-    // Return mock data as fallback
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    // Only return mock data in development
+    if (process.env.NODE_ENV !== 'production') {
+      const { searchParams } = new URL(request.url);
+      const page = parseInt(searchParams.get('page') || '1');
+      const limit = parseInt(searchParams.get('limit') || '10');
+      
+      return NextResponse.json({
+        products: mockProducts.slice((page - 1) * limit, page * limit),
+        pagination: {
+          page,
+          limit,
+          total: mockProducts.length,
+          pages: Math.ceil(mockProducts.length / limit),
+        },
+      });
+    }
     
-    return NextResponse.json({
-      products: mockProducts.slice((page - 1) * limit, page * limit),
-      pagination: {
-        page,
-        limit,
-        total: mockProducts.length,
-        pages: Math.ceil(mockProducts.length / limit),
-      },
-    });
+    // In production, return error
+    return NextResponse.json(
+      { error: 'Failed to fetch products' },
+      { status: 500 }
+    );
   }
 }
 
@@ -167,7 +184,15 @@ export async function POST(request: NextRequest) {
     
     // Check if we have a real database connection
     if (!connection.connection || connection.connection.readyState !== 1) {
-      // Return success for mock creation
+      // In production, return error if no database connection
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json(
+          { error: 'Database connection failed' },
+          { status: 500 }
+        );
+      }
+      
+      // Return success for mock creation in development
       return NextResponse.json({
         message: 'Product created successfully (mock)',
         product: {
@@ -241,7 +266,15 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     logger.error('Error creating product', { error: error instanceof Error ? error.message : 'Unknown error' });
-    // Return mock success even in error case
+    // In production, return error
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'Failed to create product' },
+        { status: 500 }
+      );
+    }
+    
+    // Return mock success even in error case in development
     return NextResponse.json({
       message: 'Product created successfully (mock)',
       product: {

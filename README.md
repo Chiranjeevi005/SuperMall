@@ -14,7 +14,7 @@ This application is production-ready! Follow the [DEPLOYMENT_GUIDE.md](DEPLOYMEN
    ```
 
 2. **Configure Environment Variables**:
-   Create a `.env` file with the following variables:
+   Create a `.env` file with the following variables (see [.env.example](.env.example) for reference):
    ```
    MONGODB_URI=your_mongodb_connection_string
    JWT_SECRET=your_jwt_secret_key
@@ -25,17 +25,22 @@ This application is production-ready! Follow the [DEPLOYMENT_GUIDE.md](DEPLOYMEN
    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
    ```
 
-3. **Fix Order Database Issues** (if needed):
+3. **Seed Database** (Important for proper data display):
+   ```bash
+   npm run seed:all
+   ```
+
+4. **Fix Order Database Issues** (if needed):
    ```bash
    npm run fix:orders-complete
    ```
 
-4. **Build for Production**:
+5. **Build for Production**:
    ```bash
    npm run build
    ```
 
-5. **Start Production Server**:
+6. **Start Production Server**:
    ```bash
    npm start
    ```
@@ -55,6 +60,11 @@ This application is production-ready! Follow the [DEPLOYMENT_GUIDE.md](DEPLOYMEN
 3. **Lint Code**:
    ```bash
    npm run lint
+   ```
+
+4. **Verify Database Seeding**:
+   ```bash
+   npm run verify:data
    ```
 
 ## 📁 Project Structure
@@ -107,8 +117,11 @@ src/
 
 - [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Complete deployment instructions
 - [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) - Pre-deployment checklist
+- [DEPLOYMENT_FIXES.md](DEPLOYMENT_FIXES.md) - Fixes for deployment issues (data mismatch between localhost and deployed output)
 - [FIX_ORDERNUMBER_INDEX.md](FIX_ORDERNUMBER_INDEX.md) - Fix for MongoDB orderNumber index issues
+- [GITIGNORE_GUIDE.md](GITIGNORE_GUIDE.md) - Guide to the enhanced .gitignore configuration
 - [PAYMENT_FLOW.md](PAYMENT_FLOW.md) - Payment flow documentation
+- [PROJECT_ENHANCEMENTS.md](PROJECT_ENHANCEMENTS.md) - Summary of all project enhancements
 - [RUNNING_THE_APP.md](RUNNING_THE_APP.md) - Instructions for running the application
 
 ## 🤝 Support

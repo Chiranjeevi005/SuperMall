@@ -47,7 +47,7 @@ async function dbConnect() {
     console.error('Database connection failed:', error);
     // In production, we should throw the error instead of returning a mock connection
     if (process.env.NODE_ENV === 'production') {
-      throw new Error('Database connection failed');
+      throw new Error('Database connection failed in production');
     }
     // In development, we'll continue with mock connection for now
     return {
