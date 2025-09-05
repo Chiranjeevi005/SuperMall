@@ -110,13 +110,7 @@ console.log('3. Configure environment variables in the Vercel dashboard');
 console.log('4. Deploy!');
 
 console.log('\n📝 Environment variables to configure in Vercel:');
-console.log('  - MONGODB_URI');
-console.log('  - JWT_SECRET');
-console.log('  - REFRESH_TOKEN_SECRET');
-console.log('  - STRIPE_SECRET_KEY');
-console.log('  - STRIPE_PUBLISHABLE_KEY');
-console.log('  - STRIPE_WEBHOOK_SECRET');
-console.log('  - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY');
+console.log('  - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (from your .env.local file)');
 console.log('  - NEXT_PUBLIC_API_URL (your Render backend URL)');
 
 console.log('\n🚀 Your application is ready for Vercel deployment!');

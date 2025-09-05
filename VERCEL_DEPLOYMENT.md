@@ -35,12 +35,6 @@ We've made the following changes to enable Vercel deployment with Render backend
     }
   ],
   "env": {
-    "MONGODB_URI": "@mongodb_uri",
-    "JWT_SECRET": "@jwt_secret",
-    "REFRESH_TOKEN_SECRET": "@refresh_token_secret",
-    "STRIPE_SECRET_KEY": "@stripe_secret_key",
-    "STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
-    "STRIPE_WEBHOOK_SECRET": "@stripe_webhook_secret",
     "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
     "NEXT_PUBLIC_API_URL": "https://supermall-cevd.onrender.com"
   }
@@ -75,12 +69,12 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://supermall-cevd.
 2. Create a new web service on Render
 3. Connect your repository
 4. Set environment variables in Render dashboard:
-   - `MONGODB_URI`
-   - `JWT_SECRET`
-   - `REFRESH_TOKEN_SECRET`
-   - `STRIPE_SECRET_KEY`
-   - `STRIPE_PUBLISHABLE_KEY`
-   - `STRIPE_WEBHOOK_SECRET`
+   - `MONGODB_URI` - Your MongoDB connection string
+   - `JWT_SECRET` - Strong secret key for JWT tokens
+   - `REFRESH_TOKEN_SECRET` - Strong secret key for refresh tokens
+   - `STRIPE_SECRET_KEY` - Production Stripe secret key
+   - `STRIPE_PUBLISHABLE_KEY` - Production Stripe publishable key
+   - `STRIPE_WEBHOOK_SECRET` - Production Stripe webhook secret
 5. Deploy and note your Render service URL
 
 ### 2. Deploy Frontend to Vercel
@@ -89,9 +83,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://supermall-cevd.
 2. Sign up/login to [Vercel](https://vercel.com)
 3. Create a new project and import your repository
 4. Configure environment variables in the Vercel dashboard:
-   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Your Stripe publishable key
+   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Your Stripe publishable key (from your [`.env.local`](.env.local) file)
    - `NEXT_PUBLIC_API_URL` - Your Render backend URL (e.g., `https://your-app.onrender.com`)
-5. Update [vercel.json](vercel.json) routes to point to your Render backend URL
+5. Update [vercel.json](vercel.json) routes to point to your Render backend URL if different from the default
 6. Deploy!
 
 ### 3. Update Vercel Configuration (If Needed)
