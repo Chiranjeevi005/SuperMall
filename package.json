@@ -18,7 +18,6 @@
     "seed:all": "node src/scripts/seedAllData.js",
     "seed:deploy": "node src/scripts/deploySeed.js",
     "verify:data": "node src/scripts/verifyData.js",
-    "postinstall": "node src/scripts/seedAllData.js",
     "reset:orders": "node reset-orders.js",
     "remove:orderNumber-index": "node remove-orderNumber-index.cjs",
     "check:orderNumber-index": "node check-and-remove-orderNumber-index.cjs",
@@ -44,6 +43,7 @@
     "test:final": "node final-test.cjs",
     "test:reproduce-duplicate": "node reproduce-duplicate-error.cjs",
     "check:app-database": "node check-app-database.cjs",
+    "deploy:vercel:helper": "node deploy-to-vercel.js",
     "deploy:vercel:local": "node deploy-vercel-local.js"
   },
   "dependencies": {

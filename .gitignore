@@ -122,3 +122,4 @@ pnpm-lock.yaml
 # Media thumbnails
 Thumbs.db
 ehthumbs.db
+.vercel

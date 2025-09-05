@@ -33,11 +33,7 @@ We've made the following changes to enable Vercel deployment with Render backend
       "src": "/(.*)",
       "dest": "/"
     }
-  ],
-  "env": {
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
-    "NEXT_PUBLIC_API_URL": "https://supermall-cevd.onrender.com"
-  }
+  ]
 }
 ```
 
@@ -79,6 +75,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://supermall-cevd.
 
 ### 2. Deploy Frontend to Vercel
 
+You can deploy using either the Vercel dashboard or the Vercel CLI:
+
+#### Option A: Deploy via Vercel Dashboard
+
 1. Push your frontend code to a Git repository
 2. Sign up/login to [Vercel](https://vercel.com)
 3. Create a new project and import your repository
@@ -87,6 +87,28 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://supermall-cevd.
    - `NEXT_PUBLIC_API_URL` - Your Render backend URL (e.g., `https://your-app.onrender.com`)
 5. Update [vercel.json](vercel.json) routes to point to your Render backend URL if different from the default
 6. Deploy!
+
+#### Option B: Deploy via Vercel CLI
+
+1. Install Vercel CLI globally:
+   ```bash
+   npm install -g vercel
+   ```
+
+2. Login to your Vercel account:
+   ```bash
+   vercel login
+   ```
+
+3. Deploy the project:
+   ```bash
+   vercel --yes
+   ```
+
+4. For subsequent deployments to production:
+   ```bash
+   vercel --prod
+   ```
 
 ### 3. Update Vercel Configuration (If Needed)
 
