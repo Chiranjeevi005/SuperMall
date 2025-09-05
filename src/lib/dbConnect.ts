@@ -2,10 +2,6 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
-}
-
 /**
  * Global is used here to maintain a cached connection across hot reloads
  * in development. This prevents connections from growing exponentially
@@ -18,6 +14,16 @@ if (!cached) {
 }
 
 async function dbConnect() {
+  // During build time, don't try to connect to database
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    console.log('Skipping database connection during build phase');
+    return {
+      connection: {
+        readyState: 0,
+      },
+    } as any;
+  }
+
   // If we're already connected, return the existing connection
   if (cached.conn && cached.conn.connection?.readyState === 1) {
     return cached.conn;
@@ -26,6 +32,21 @@ async function dbConnect() {
   // If we have a promise, return it
   if (cached.promise) {
     return cached.promise;
+  }
+
+  // Check for MONGODB_URI only when we actually need to connect
+  if (!MONGODB_URI) {
+    // During development, we can continue with a mock connection
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('MONGODB_URI not defined, using mock connection for development');
+      return {
+        connection: {
+          readyState: 0,
+        },
+      } as any;
+    }
+    // In other environments, throw an error
+    throw new Error('Please define the MONGODB_URI environment variable inside .env');
   }
 
   // Create a new connection promise
