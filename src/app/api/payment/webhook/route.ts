@@ -4,9 +4,36 @@ import dbConnect from '@/lib/dbConnect';
 import Order from '@/models/Order';
 import logger from '@/utils/logger';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+// Initialize Stripe only when needed, not during module import
+let stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  // During build time, return a mock object
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return {
+      webhooks: {
+        constructEvent: () => ({
+          type: 'payment_intent.succeeded',
+          data: {
+            object: {
+              id: 'mock_payment_intent_id',
+            },
+          },
+        }),
+      },
+    } as any;
+  }
+
+  if (!stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is required');
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+    });
+  }
+  return stripe;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Verify webhook signature
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(
+      event = getStripe().webhooks.constructEvent(
         body,
         sig,
         process.env.STRIPE_WEBHOOK_SECRET!

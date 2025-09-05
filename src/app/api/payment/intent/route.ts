@@ -4,9 +4,32 @@ import dbConnect from '@/lib/dbConnect';
 import Order from '@/models/Order';
 import logger from '@/utils/logger';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+// Initialize Stripe only when needed, not during module import
+let stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  // During build time, return a mock object
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return {
+      paymentIntents: {
+        create: async () => ({
+          id: 'mock_payment_intent_id',
+          client_secret: 'mock_client_secret',
+        }),
+      },
+    } as any;
+  }
+
+  if (!stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is required');
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+    });
+  }
+  return stripe;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create a PaymentIntent with the order amount and currency
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await getStripe().paymentIntents.create({
       amount: Math.round(amount * 100), // Stripe expects amount in smallest currency unit (paise for INR)
       currency: currency,
       metadata: {

@@ -11,6 +11,7 @@ Your Super Mall e-commerce application is now ready for deployment! We've comple
 3. **API Route Configuration**: Verified all frontend pages correctly use the Render backend URL
 4. **Vercel Configuration**: Simplified vercel.json to remove references to non-existent secrets
 5. **Database Connection Issue**: Fixed database connection handling during build phase to prevent build failures
+6. **Stripe Initialization Issue**: Fixed Stripe API initialization during build phase to prevent build failures
 
 ## 📦 Deployment Steps
 
@@ -107,14 +108,18 @@ These should already be set in your Render deployment:
 
 **Solution**: We've fixed the database connection handling during the build phase. The application no longer requires database environment variables during the build process.
 
-### 4. "API calls not working after deployment"
+### 4. "Build failed: Neither apiKey nor config.authenticator provided"
+
+**Solution**: We've fixed the Stripe API initialization during the build phase. The application no longer requires Stripe environment variables during the build process.
+
+### 5. "API calls not working after deployment"
 
 **Solution**: 
 - Ensure `NEXT_PUBLIC_API_URL` is set correctly in Vercel environment variables
 - Verify that your Render backend is deployed and running
 - Check that vercel.json routes are correctly configured
 
-### 5. "No data displayed on frontend pages"
+### 6. "No data displayed on frontend pages"
 
 **Solution**:
 - Verify that your MongoDB database is populated with data

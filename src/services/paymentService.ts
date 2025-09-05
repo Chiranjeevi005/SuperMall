@@ -16,20 +16,61 @@ export interface PaymentResult {
 }
 
 class PaymentService {
-  private stripe: Stripe;
+  private stripe: Stripe | null = null;
 
   constructor() {
-    // Initialize Stripe with the secret key
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2025-08-27.basil',
-    });
+    // Stripe will be initialized when first needed
+  }
+
+  private getStripe(): Stripe {
+    // During build time, return a mock object
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return {
+        paymentIntents: {
+          create: async () => ({
+            id: 'mock_payment_intent_id',
+            amount: 0,
+            currency: 'inr',
+            status: 'succeeded',
+            client_secret: 'mock_client_secret',
+            metadata: {},
+          }),
+          confirm: async () => ({
+            id: 'mock_payment_intent_id',
+            status: 'succeeded',
+            metadata: {},
+          }),
+          retrieve: async () => ({
+            id: 'mock_payment_intent_id',
+            status: 'succeeded',
+            metadata: {},
+          }),
+        },
+        refunds: {
+          create: async () => ({
+            id: 'mock_refund_id',
+            payment_intent: 'mock_payment_intent_id',
+          }),
+        },
+      } as any;
+    }
+
+    if (!this.stripe) {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        throw new Error('STRIPE_SECRET_KEY environment variable is required');
+      }
+      this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2025-08-27.basil',
+      });
+    }
+    return this.stripe;
   }
 
   // Create a payment intent (for Stripe-like payment gateways)
   async createPaymentIntent(amount: number, currency: string = 'inr'): Promise<PaymentIntent> {
     try {
       // Create a PaymentIntent with the order amount and currency
-      const paymentIntent = await this.stripe.paymentIntents.create({
+      const paymentIntent = await this.getStripe().paymentIntents.create({
         amount: Math.round(amount * 100), // Stripe expects amount in smallest currency unit (paise for INR)
         currency: currency,
         automatic_payment_methods: {
@@ -73,7 +114,7 @@ class PaymentService {
           // This is kept for backward compatibility
           if (paymentData.paymentIntentId && paymentData.paymentMethodId) {
             // Confirm the payment intent
-            const paymentIntent = await this.stripe.paymentIntents.confirm(
+            const paymentIntent = await this.getStripe().paymentIntents.confirm(
               paymentData.paymentIntentId,
               { payment_method: paymentData.paymentMethodId }
             );
@@ -157,7 +198,7 @@ class PaymentService {
   async refundPayment(paymentId: string, amount?: number): Promise<PaymentResult> {
     try {
       // Create a refund
-      const refund = await this.stripe.refunds.create({
+      const refund = await this.getStripe().refunds.create({
         payment_intent: paymentId,
         amount: amount ? Math.round(amount * 100) : undefined // Convert to smallest currency unit
       });
@@ -177,7 +218,7 @@ class PaymentService {
   // Verify payment status
   async verifyPayment(paymentId: string): Promise<{ status: string; orderId?: string }> {
     try {
-      const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentId);
+      const paymentIntent = await this.getStripe().paymentIntents.retrieve(paymentId);
       
       return {
         status: paymentIntent.status,
