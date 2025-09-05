@@ -16,6 +16,7 @@
     "seed:categories": "node src/scripts/seedCategories.js",
     "seed:products": "node src/scripts/seedProducts.js",
     "seed:all": "node src/scripts/seedAllData.js",
+    "seed:deploy": "node src/scripts/deploySeed.js",
     "verify:data": "node src/scripts/verifyData.js",
     "postinstall": "node src/scripts/seedAllData.js",
     "reset:orders": "node reset-orders.js",
