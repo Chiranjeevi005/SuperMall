@@ -4,14 +4,24 @@ export interface IProduct extends Document {
   name: string;
   description: string;
   price: number;
-  shop: mongoose.Types.ObjectId; // Reference to Shop
+  shop: mongoose.Types.ObjectId; // Reference to Vendor
   category: string;
   images: string[]; // URLs to product images
   stock: number;
   isActive: boolean;
+  isApproved: boolean; // Add this field
   features: {
     name: string;
     value: string;
+  }[];
+  // Add offers field to support discounts
+  offers?: {
+    title: string;
+    description: string;
+    discountType: 'percentage' | 'fixed';
+    discountValue: number;
+    startDate: Date;
+    endDate: Date;
   }[];
   createdAt: Date;
   updatedAt: Date;
@@ -35,7 +45,7 @@ const ProductSchema: Schema = new Schema(
     },
     shop: {
       type: Schema.Types.ObjectId,
-      ref: 'Shop',
+      ref: 'Vendor', // Changed from 'Shop' to 'Vendor'
       required: true,
     },
     category: {
@@ -54,9 +64,25 @@ const ProductSchema: Schema = new Schema(
       type: Boolean,
       default: true,
     },
+    isApproved: { // Add this field
+      type: Boolean,
+      default: false,
+    },
     features: [{
       name: String,
       value: String,
+    }],
+    // Add offers field to support discounts
+    offers: [{
+      title: String,
+      description: String,
+      discountType: {
+        type: String,
+        enum: ['percentage', 'fixed']
+      },
+      discountValue: Number,
+      startDate: Date,
+      endDate: Date,
     }],
   },
   {

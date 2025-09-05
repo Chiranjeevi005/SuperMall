@@ -4,10 +4,14 @@ import '@testing-library/jest-dom';
 import Header from '@/components/Header';
 
 // Mock next/link and next/navigation since they don't work in tests
+const MockLink = ({ children }: { children: React.ReactNode }) => {
+  return <div>{children}</div>;
+};
+
+MockLink.displayName = 'MockLink';
+
 jest.mock('next/link', () => {
-  return ({ children }: { children: React.ReactNode }) => {
-    return <div>{children}</div>;
-  };
+  return MockLink;
 });
 
 jest.mock('next/navigation', () => ({

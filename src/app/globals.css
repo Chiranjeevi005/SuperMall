@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
+/* Custom variables for rural theme */
 :root {
-  --background: #ffffff;
+  --background: #fdfdfc;
   --foreground: #171717;
+  --card-background: #ffffff;
+  --card-foreground: #171717;
+  --border-color: #e5e5e5;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Enhanced body styling - Rural theme */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  transition: background-color, color 0.3s ease;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom utility classes */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Focus styles for accessibility */
+.focus-ring {
+  @apply focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-offset-2;
+}
+
+/* Gradient text utility - Rural theme */
+.gradient-text {
+  @apply bg-gradient-to-r from-green-700 to-amber-600 bg-clip-text text-transparent;
+}
+
+/* Card hover effect */
+.card-hover {
+  @apply transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl;
+}
+
+/* Button hover effect */
+.button-hover {
+  @apply transition-all duration-300 transform hover:-translate-y-0.5;
+}
+
+/* Custom scrollbar - Rural theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-amber-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-amber-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-amber-400;
+}
+
+/* Animation for loading skeletons */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Responsive grid utilities */
+.grid-cols-responsive {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* Transitions */
+.smooth-transition {
+  transition: background-color, border-color, color, fill, stroke 0.3s ease;
+}
+
+/* Enhanced shadows for rural theme */
+.shadow-rural {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-rural-lg {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Border utilities for rural theme */
+.border-rural {
+  @apply border-2 border-amber-200;
+}
+
+/* Background gradients for rural theme */
+.bg-gradient-rural {
+  background: linear-gradient(135deg, #fdfdfc 0%, #fff9f0 100%);
 }

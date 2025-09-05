@@ -3,15 +3,17 @@ import { ObjectId } from 'mongodb';
 import dbConnect from '@/lib/dbConnect';
 import Product from '@/models/Product';
 import logger from '@/utils/logger';
+import React from 'react';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
     
-    const { id } = params;
+    // In Next.js 15+, params is a Promise and must be awaited
+    const { id } = await params;
     
     // Validate ObjectId
     if (!ObjectId.isValid(id)) {
@@ -35,8 +37,8 @@ export async function GET(
     logger.info('Product fetched', { productId: id });
     
     return NextResponse.json({ product });
-  } catch (error: any) {
-    logger.error('Error fetching product', { error: error.message, productId: params.id });
+  } catch (error: unknown) {
+    logger.error('Error fetching product', { error: error instanceof Error ? error.message : 'Unknown error', productId: (await params).id });
     return NextResponse.json(
       { error: 'Something went wrong while fetching product' },
       { status: 500 }
@@ -46,12 +48,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
     
-    const { id } = params;
+    // In Next.js 15+, params is a Promise and must be awaited
+    const { id } = await params;
     
     // Validate ObjectId
     if (!ObjectId.isValid(id)) {
@@ -84,8 +87,8 @@ export async function PUT(
       message: 'Product updated successfully',
       product,
     });
-  } catch (error: any) {
-    logger.error('Error updating product', { error: error.message, productId: params.id });
+  } catch (error: unknown) {
+    logger.error('Error updating product', { error: error instanceof Error ? error.message : 'Unknown error', productId: (await params).id });
     return NextResponse.json(
       { error: 'Something went wrong while updating product' },
       { status: 500 }
@@ -95,12 +98,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
     
-    const { id } = params;
+    // In Next.js 15+, params is a Promise and must be awaited
+    const { id } = await params;
     
     // Validate ObjectId
     if (!ObjectId.isValid(id)) {
@@ -126,8 +130,8 @@ export async function DELETE(
     return NextResponse.json({
       message: 'Product deleted successfully',
     });
-  } catch (error: any) {
-    logger.error('Error deleting product', { error: error.message, productId: params.id });
+  } catch (error: unknown) {
+    logger.error('Error deleting product', { error: error instanceof Error ? error.message : 'Unknown error', productId: (await params).id });
     return NextResponse.json(
       { error: 'Something went wrong while deleting product' },
       { status: 500 }

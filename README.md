@@ -1,210 +1,116 @@
-# Super Mall Web Application
+# Super Mall - E-commerce Platform
 
-A complete e-commerce web application for managing shops, products, and offers in a mall environment. Built with Next.js, TypeScript, Tailwind CSS, MongoDB, and Vercel.
+A comprehensive e-commerce web application built with Next.js 15+, MongoDB, and Stripe.
 
-## Features
+## 🚀 Deployment Ready
 
-### Admin Panel
-- Secure login with JWT authentication
-- Create and manage shop details
-- Manage offers and discounts
-- Manage product categories and mall floors
+This application is production-ready! Follow the [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed deployment instructions.
 
-### User Features
-- Browse shops by category and floor
-- View product listings with filtering options
-- Compare product costs and features
-- View current offers and discounts
-- Floor-wise navigation
+## 📋 Quick Start
 
-## Tech Stack
-
-- **Frontend**: Next.js 13+ with App Router, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT tokens with bcrypt password hashing
-- **Logging**: Winston structured logging
-- **Deployment**: Vercel (frontend & backend), MongoDB Atlas (database)
-
-## Project Structure
-
-```
-src/
-├── app/                 # Next.js app router pages
-│   ├── api/             # API routes
-│   ├── login/           # Login page
-│   ├── register/        # Registration page
-│   ├── shops/           # Shops listing and details
-│   ├── products/        # Products listing and details
-│   ├── offers/          # Offers listing and details
-│   ├── layout.tsx       # Root layout
-│   └── page.tsx         # Home page
-├── components/          # Reusable UI components
-├── lib/                 # Database connection and utilities
-├── middleware/          # Authentication middleware
-├── models/              # Mongoose data models
-├── services/            # Business logic services
-└── utils/               # Utility functions
-```
-
-## Data Models
-
-### User
-- name: string
-- email: string (unique)
-- password: string (hashed)
-- role: enum ['admin', 'merchant', 'customer']
-
-### Shop
-- name: string
-- description: string
-- owner: reference to User
-- location: { floor: number, section: string }
-- contact: { phone, email, address }
-- categories: array of strings
-- isActive: boolean
-
-### Product
-- name: string
-- description: string
-- price: number
-- shop: reference to Shop
-- category: string
-- images: array of URLs
-- stock: number
-- isActive: boolean
-- features: array of { name, value }
-
-### Offer
-- title: string
-- description: string
-- discountType: enum ['percentage', 'fixed']
-- discountValue: number
-- startDate: Date
-- endDate: Date
-- shop: reference to Shop
-- products: array of references to Products
-- isActive: boolean
-
-### Category
-- name: string (unique)
-- description: string
-- icon: URL
-- isActive: boolean
-
-## API Endpoints
-
-### Authentication
-- POST `/api/auth/register` - User registration
-- POST `/api/auth/login` - User login
-
-### Shops
-- GET `/api/shops` - List shops with filtering
-- POST `/api/shops` - Create a new shop
-- GET `/api/shops/[id]` - Get shop details
-- PUT `/api/shops/[id]` - Update shop
-- DELETE `/api/shops/[id]` - Delete shop
-
-### Products
-- GET `/api/products` - List products with filtering
-- POST `/api/products` - Create a new product
-- GET `/api/products/[id]` - Get product details
-- PUT `/api/products/[id]` - Update product
-- DELETE `/api/products/[id]` - Delete product
-
-### Offers
-- GET `/api/offers` - List offers with filtering
-- POST `/api/offers` - Create a new offer
-- GET `/api/offers/[id]` - Get offer details
-- PUT `/api/offers/[id]` - Update offer
-- DELETE `/api/offers/[id]` - Delete offer
-
-### Categories
-- GET `/api/categories` - List categories
-- POST `/api/categories` - Create a new category
-- GET `/api/categories/[id]` - Get category details
-- PUT `/api/categories/[id]` - Update category
-- DELETE `/api/categories/[id]` - Delete category
-
-## Setup Instructions
-
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd supermall
-   ```
-
-2. Install dependencies:
+1. **Install Dependencies**:
    ```bash
    npm install
    ```
 
-3. Set up environment variables:
-   Create a `.env.local` file in the root directory with:
+2. **Configure Environment Variables**:
+   Create a `.env` file with the following variables:
    ```
    MONGODB_URI=your_mongodb_connection_string
    JWT_SECRET=your_jwt_secret_key
+   REFRESH_TOKEN_SECRET=your_refresh_token_secret
+   STRIPE_SECRET_KEY=your_stripe_secret_key
+   STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+   STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
    ```
 
-4. Run the development server:
+3. **Fix Order Database Issues** (if needed):
+   ```bash
+   npm run fix:orders-complete
+   ```
+
+4. **Build for Production**:
+   ```bash
+   npm run build
+   ```
+
+5. **Start Production Server**:
+   ```bash
+   npm start
+   ```
+
+## 🛠️ Development
+
+1. **Start Development Server**:
    ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+2. **Run Tests**:
+   ```bash
+   npm test
+   ```
 
-## Deployment
+3. **Lint Code**:
+   ```bash
+   npm run lint
+   ```
 
-### Vercel Deployment
-1. Push your code to a GitHub repository
-2. Connect your repository to Vercel
-3. Set environment variables in Vercel dashboard
-4. Deploy!
+## 📁 Project Structure
 
-### MongoDB Atlas Setup
-1. Create a MongoDB Atlas account
-2. Create a new cluster
-3. Configure database access and network access
-4. Get your connection string and add it to environment variables
-
-## Testing
-
-Run unit tests with Jest:
-```bash
-npm run test
+```
+src/
+├── app/              # Next.js app router pages
+├── components/       # React components
+├── context/          # React context providers
+├── lib/              # Utility functions and database connection
+├── middleware/       # Next.js middleware
+├── models/           # Mongoose models
+├── scripts/          # Utility scripts
+├── services/         # Business logic services
+├── theme/            # Theme configuration
+└── utils/            # Helper functions
 ```
 
-## Optimization Features
+## 🔐 Security Features
 
-- Server-side rendering (SSR) for better SEO
-- Static site generation (SSG) for improved performance
-- MongoDB query optimization with proper indexing
-- Next.js image optimization
-- Code splitting for faster loading
-
-## Logging
-
-All user actions and system events are logged using Winston with:
-- File transport for error logs
-- File transport for combined logs
-- Console transport for development
-
-## Security Features
-
+- JWT-based authentication
 - Password hashing with bcrypt
-- JWT token authentication
-- Input validation and sanitization
-- MongoDB injection prevention
-- CORS configuration
+- Stripe payment integration
+- Role-based access control
+- Account lockout after failed login attempts
 
-## Contributing
+## 💳 Payment Integration
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a pull request
+- Stripe integration for secure payments
+- Support for multiple payment methods
+- Webhook handling for payment confirmation
 
-## License
+## 📱 Responsive Design
 
-This project is licensed under the MIT License.
+- Mobile-first approach
+- Responsive layouts for all device sizes
+- Touch-friendly interface
+
+## 🎨 Technology Stack
+
+- **Frontend**: Next.js 15+, React 19+, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: MongoDB with Mongoose
+- **Authentication**: JWT, bcrypt
+- **Payments**: Stripe
+- **Logging**: Winston
+- **Testing**: Jest
+
+## 📄 Documentation
+
+- [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Complete deployment instructions
+- [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) - Pre-deployment checklist
+- [FIX_ORDERNUMBER_INDEX.md](FIX_ORDERNUMBER_INDEX.md) - Fix for MongoDB orderNumber index issues
+- [PAYMENT_FLOW.md](PAYMENT_FLOW.md) - Payment flow documentation
+- [RUNNING_THE_APP.md](RUNNING_THE_APP.md) - Instructions for running the application
+
+## 🤝 Support
+
+For deployment issues, please refer to the [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) or open an issue on the repository.
