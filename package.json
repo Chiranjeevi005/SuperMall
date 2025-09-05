@@ -17,6 +17,7 @@
     "seed:products": "node src/scripts/seedProducts.js",
     "seed:all": "node src/scripts/seedAllData.js",
     "seed:deploy": "node src/scripts/deploySeed.js",
+    "seed:users": "node src/scripts/seedUsers.js",
     "verify:data": "node src/scripts/verifyData.js",
     "reset:orders": "node reset-orders.js",
     "remove:orderNumber-index": "node remove-orderNumber-index.cjs",
