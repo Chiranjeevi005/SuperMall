@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import logger from '@/utils/logger';
 
 export interface PaymentIntent {
   id: string;
@@ -68,11 +69,20 @@ class PaymentService {
 
   // Create a payment intent (for Stripe-like payment gateways)
   async createPaymentIntent(amount: number, currency: string = 'inr'): Promise<PaymentIntent> {
+    // Validate inputs
+    if (typeof amount !== 'number' || amount <= 0) {
+      throw new Error('Invalid amount');
+    }
+    
+    if (typeof currency !== 'string' || currency.length === 0) {
+      throw new Error('Invalid currency');
+    }
+    
     try {
       // Create a PaymentIntent with the order amount and currency
       const paymentIntent = await this.getStripe().paymentIntents.create({
         amount: Math.round(amount * 100), // Stripe expects amount in smallest currency unit (paise for INR)
-        currency: currency,
+        currency: currency.toLowerCase(), // Ensure lowercase currency code
         automatic_payment_methods: {
           enabled: true,
         },
@@ -86,7 +96,9 @@ class PaymentService {
         client_secret: paymentIntent.client_secret!
       };
     } catch (error: any) {
-      throw new Error(`Failed to create payment intent: ${error.message}`);
+      // Don't expose internal error details to users
+      logger.error('Failed to create payment intent', { error: error.message });
+      throw new Error('Failed to create payment intent');
     }
   }
 
@@ -97,6 +109,20 @@ class PaymentService {
     paymentData: any,
     orderId?: string
   ): Promise<PaymentResult> {
+    // Validate inputs
+    if (typeof method !== 'string' || method.length === 0) {
+      return {
+        success: false,
+        errorMessage: 'Invalid payment method'
+      };
+    }
+    
+    if (typeof amount !== 'number' || amount <= 0) {
+      return {
+        success: false,
+        errorMessage: 'Invalid amount'
+      };
+    }
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -187,9 +213,11 @@ class PaymentService {
           };
       }
     } catch (error: any) {
+      // Don't expose internal error details to users
+      logger.error('Payment processing failed', { error: error.message, method });
       return {
         success: false,
-        errorMessage: `Payment processing failed: ${error.message}`
+        errorMessage: 'Payment processing failed'
       };
     }
   }

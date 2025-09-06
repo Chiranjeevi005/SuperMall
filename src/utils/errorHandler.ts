@@ -2,8 +2,13 @@
 
 // Standardized API error response
 export const apiErrorResponse = (message: string, status: number = 500) => {
+  // Don't expose internal error details to users in production
+  const errorMessage = process.env.NODE_ENV === 'production' 
+    ? 'An error occurred. Please try again later.' 
+    : message;
+  
   return new Response(
-    JSON.stringify({ error: message }),
+    JSON.stringify({ error: errorMessage }),
     { 
       status,
       headers: { 'Content-Type': 'application/json' }
@@ -24,10 +29,25 @@ export const apiSuccessResponse = (data: any, status: number = 200) => {
 
 // Error logging with context
 export const logError = (logger: any, context: string, error: unknown) => {
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+  
+  // Sanitize error message before logging
+  const sanitizedMessage = sanitizeErrorMessage(errorMessage);
+  
   logger.error(context, { 
-    error: error instanceof Error ? error.message : 'Unknown error',
+    error: sanitizedMessage,
     stack: error instanceof Error ? error.stack : undefined
   });
+};
+
+// Sanitize error messages to prevent information leakage
+export const sanitizeErrorMessage = (message: string): string => {
+  // Remove sensitive information patterns
+  return message
+    .replace(/(password|secret|key|token)=['"][^'"]*['"]/gi, '$1=[REDACTED]')
+    .replace(/['"][^'"]*(password|secret|key|token)['"][^'"]*/gi, '[REDACTED]')
+    .replace(/d{16}/g, '****-****-****-****') // Credit card numbers
+    .replace(/d{3}-?d{2}-?d{4}/g, '***-**-****'); // SSN
 };
 
 // Database error handler
@@ -43,7 +63,11 @@ export const handleDatabaseError = (error: unknown): string => {
     if (error.name === 'CastError') {
       return 'Invalid data format. Please check your input.';
     }
-    return error.message;
+    
+    // Don't expose internal database errors to users in production
+    return process.env.NODE_ENV === 'production' 
+      ? 'A database error occurred. Please try again later.' 
+      : error.message;
   }
   return 'An unexpected database error occurred.';
 };
@@ -54,7 +78,11 @@ export const handleNetworkError = (error: unknown): string => {
     if (error.name === 'FetchError' || error.name === 'TypeError') {
       return 'Network error. Please check your connection and try again.';
     }
-    return error.message;
+    
+    // Don't expose internal network errors to users in production
+    return process.env.NODE_ENV === 'production' 
+      ? 'A network error occurred. Please try again later.' 
+      : error.message;
   }
   return 'A network error occurred.';
 };
@@ -68,7 +96,11 @@ export const handleAuthError = (error: unknown): string => {
     if (error.name === 'TokenExpiredError') {
       return 'Token expired. Please log in again.';
     }
-    return error.message;
+    
+    // Don't expose internal authentication errors to users in production
+    return process.env.NODE_ENV === 'production' 
+      ? 'An authentication error occurred. Please try again.' 
+      : error.message;
   }
   return 'An authentication error occurred.';
 };
@@ -97,7 +129,11 @@ export const handleBusinessLogicError = (error: unknown): string => {
     if (error.message.includes('not found')) {
       return 'The requested resource was not found.';
     }
-    return error.message;
+    
+    // Don't expose internal business logic errors to users in production
+    return process.env.NODE_ENV === 'production' 
+      ? 'A business logic error occurred. Please try again.' 
+      : error.message;
   }
   return 'A business logic error occurred.';
 };
@@ -112,7 +148,11 @@ export const handleExternalServiceError = (error: unknown): string => {
     if (error.message.includes('unauthorized')) {
       return 'Authentication with external service failed.';
     }
-    return `External service error: ${error.message}`;
+    
+    // Don't expose internal external service errors to users in production
+    return process.env.NODE_ENV === 'production' 
+      ? 'An error occurred with an external service. Please try again.' 
+      : `External service error: ${error.message}`;
   }
   return 'An error occurred with an external service.';
 };
@@ -121,9 +161,15 @@ export const handleExternalServiceError = (error: unknown): string => {
 export const formatErrorForUser = (error: unknown): string => {
   if (error instanceof Error) {
     // Don't expose internal error details to users
-    if (error.message.includes('internal') || error.message.includes('database')) {
+    if (error.message.includes('internal') || error.message.includes('database') || error.message.includes('secret') || error.message.includes('key')) {
       return 'An internal error occurred. Please try again later.';
     }
+    
+    // In production, provide generic error messages
+    if (process.env.NODE_ENV === 'production') {
+      return 'An error occurred. Please try again later.';
+    }
+    
     return error.message;
   }
   return 'An unexpected error occurred.';
@@ -141,6 +187,7 @@ export const errorHandlers = {
   handleBusinessLogicError,
   handleExternalServiceError,
   formatErrorForUser,
+  sanitizeErrorMessage,
 };
 
 // Error categories for better error handling

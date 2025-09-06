@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Validate password
-    if (password.length < 1) {
+    if (typeof password !== 'string' || password.length < 1) {
       return errorHandlers.apiErrorResponse('Password is required', 400);
     }
     
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     // Log the login
     logger.info('User logged in', { userId: user._id, email: user.email, role: user.role });
     
-    // Set refresh token as HTTP-only cookie
+    // Set refresh token as HTTP-only cookie with enhanced security
     const response = NextResponse.json({
       message: 'Login successful',
       user: {
@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/',
+      sameSite: 'strict',
     });
     
     // Return access token in response body

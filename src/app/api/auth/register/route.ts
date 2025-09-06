@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/',
+      sameSite: 'strict',
     });
     
     // Return access token in response body

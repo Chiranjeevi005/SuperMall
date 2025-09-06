@@ -15,13 +15,21 @@ export async function POST(request: NextRequest) {
     
     await dbConnect();
     
-    const userId = (request as any).user.userId;
+    const userId = (request as any).user?.id;
     const body = await request.json();
     const { amount, currency = 'INR', orderId } = body;
     
     // Validate input
     if (!amount) {
       return errorHandlers.apiErrorResponse('Amount is required', 400);
+    }
+    
+    if (typeof amount !== 'number' || amount <= 0) {
+      return errorHandlers.apiErrorResponse('Invalid amount', 400);
+    }
+    
+    if (typeof currency !== 'string' || currency.length === 0) {
+      return errorHandlers.apiErrorResponse('Invalid currency', 400);
     }
     
     // Create payment intent
@@ -48,13 +56,21 @@ export async function PUT(request: NextRequest) {
     
     await dbConnect();
     
-    const userId = (request as any).user.userId;
+    const userId = (request as any).user?.id;
     const body = await request.json();
     const { paymentMethod, amount, paymentData, orderId } = body;
     
     // Validate input
     if (!paymentMethod || !amount) {
       return errorHandlers.apiErrorResponse('Payment method and amount are required', 400);
+    }
+    
+    if (typeof amount !== 'number' || amount <= 0) {
+      return errorHandlers.apiErrorResponse('Invalid amount', 400);
+    }
+    
+    if (typeof paymentMethod !== 'string' || paymentMethod.length === 0) {
+      return errorHandlers.apiErrorResponse('Invalid payment method', 400);
     }
     
     // Process payment

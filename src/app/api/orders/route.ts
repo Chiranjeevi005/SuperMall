@@ -6,6 +6,7 @@ import Product from '@/models/Product'; // Also import Product to ensure it's re
 import { errorHandlers } from '@/utils/errorHandler';
 import logger from '@/utils/logger';
 import emailService from '@/services/emailService';
+import { authMiddleware } from '@/middleware/authMiddleware';
 
 // Function to generate a unique order ID
 function generateOrderId(): string {
@@ -27,6 +28,16 @@ function generateUUID(): string {
 // GET /api/orders - Get all orders
 export async function GET(request: NextRequest) {
   try {
+    // Apply authentication middleware
+    const authResult = await authMiddleware(request, {} as any);
+    if (authResult) return authResult;
+    
+    // Get user from request
+    const user = (request as any).user;
+    if (!user) {
+      return errorHandlers.apiErrorResponse('User not authenticated', 401);
+    }
+    
     console.log('Connecting to database...');
     const connection = await dbConnect();
     console.log('Database connection state:', connection.connection?.readyState);
@@ -43,7 +54,10 @@ export async function GET(request: NextRequest) {
     }
     
     // Fetch orders from the database with populated fields
-    const orders: any = await Order.find({})
+    // Non-admin users can only see their own orders
+    const query = user.role === 'admin' ? {} : { customer: user.id };
+    
+    const orders: any = await Order.find(query)
       .populate('customer', 'name email')
       .populate('vendor', 'name')
       .populate('items.product') // Also populate product details
@@ -81,6 +95,16 @@ export async function GET(request: NextRequest) {
 // GET /api/orders/[id] - Get a specific order by ID
 export async function GET_BY_ID(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    // Apply authentication middleware
+    const authResult = await authMiddleware(request, {} as any);
+    if (authResult) return authResult;
+    
+    // Get user from request
+    const user = (request as any).user;
+    if (!user) {
+      return errorHandlers.apiErrorResponse('User not authenticated', 401);
+    }
+    
     const { id: orderId } = params;
     
     if (!orderId) {
@@ -102,7 +126,10 @@ export async function GET_BY_ID(request: NextRequest, { params }: { params: { id
     }
     
     // Fetch the specific order from the database with populated fields
-    const order: any = await Order.findOne({ orderId })
+    // Non-admin users can only see their own orders
+    const query = user.role === 'admin' ? { orderId } : { orderId, customer: user.id };
+    
+    const order: any = await Order.findOne(query)
       .populate('customer', 'name email')
       .populate('vendor', 'name')
       .populate('items.product');
@@ -151,6 +178,10 @@ export async function GET_BY_ID(request: NextRequest, { params }: { params: { id
 // POST /api/orders - Create a new order
 export async function POST(request: NextRequest) {
   try {
+    // Apply authentication middleware
+    const authResult = await authMiddleware(request, {} as any);
+    if (authResult) return authResult;
+    
     console.log('Connecting to database...');
     const connection = await dbConnect();
     console.log('Database connection state:', connection.connection?.readyState);
@@ -158,14 +189,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('Order creation request body:', body);
     
+    // Get user from request
+    const user = (request as any).user;
+    if (!user) {
+      return errorHandlers.apiErrorResponse('User not authenticated', 401);
+    }
+    
     // Validate that body exists
     if (!body) {
       console.log('No request body provided');
       return errorHandlers.apiErrorResponse('No request body provided', 400);
     }
     
+    // Set customer ID from authenticated user
+    body.customer = user.id;
+    
     // Validate required fields
-    const requiredFields = ['customer', 'vendor', 'items', 'totalAmount', 'shippingAddress', 'paymentMethod'];
+    const requiredFields = ['vendor', 'items', 'totalAmount', 'shippingAddress', 'paymentMethod'];
     for (const field of requiredFields) {
       if (!body[field]) {
         console.log(`Missing required field: ${field}`);
@@ -336,6 +376,16 @@ export async function POST(request: NextRequest) {
 // PUT /api/orders - Update order status
 export async function PUT(request: NextRequest) {
   try {
+    // Apply authentication middleware
+    const authResult = await authMiddleware(request, {} as any);
+    if (authResult) return authResult;
+    
+    // Get user from request
+    const user = (request as any).user;
+    if (!user) {
+      return errorHandlers.apiErrorResponse('User not authenticated', 401);
+    }
+    
     const connection = await dbConnect();
     
     // Check if we have a real database connection
@@ -361,6 +411,19 @@ export async function PUT(request: NextRequest) {
     // Validate input
     if (!orderId || !status) {
       return errorHandlers.apiErrorResponse('Order ID and status are required', 400);
+    }
+    
+    // Validate that the user has permission to update this order
+    // For now, we'll allow admins and the order owner to update
+    // In a real implementation, you might want more sophisticated permission checking
+    const order = await Order.findOne({ orderId });
+    if (!order) {
+      return errorHandlers.apiErrorResponse('Order not found', 404);
+    }
+    
+    // Check if user is admin or the order owner
+    if (user.role !== 'admin' && order.customer.toString() !== user.id) {
+      return errorHandlers.apiErrorResponse('Insufficient permissions to update this order', 403);
     }
     
     // Update the order in the database

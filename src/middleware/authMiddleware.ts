@@ -44,22 +44,19 @@ export async function authMiddleware(request: NextRequest, event: NextFetchEvent
     }
 
     // Add user info to request for use in API routes
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('user-id', decoded.id);
-    requestHeaders.set('user-email', decoded.email);
-    requestHeaders.set('user-role', decoded.role);
-    
-    // Clone the request with new headers
-    const nextRequest = new NextRequest(request, {
-      headers: requestHeaders,
-    });
+    (request as any).user = {
+      id: decoded.id,
+      email: decoded.email,
+      role: decoded.role
+    };
     
     return null; // Continue to the next middleware or route handler
   } catch (error) {
     logger.error('Auth middleware error:', error);
     
+    // Don't expose internal error details to users
     return new Response(
-      JSON.stringify({ error: 'Authentication error.' }),
+      JSON.stringify({ error: 'Authentication failed.' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
@@ -88,8 +85,9 @@ export function authorize(roles: string[] = []) {
     } catch (error) {
       logger.error('Authorization middleware error:', error);
       
+      // Don't expose internal error details to users
       return new Response(
-        JSON.stringify({ error: 'Authorization error.' }),
+        JSON.stringify({ error: 'Authorization failed.' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }

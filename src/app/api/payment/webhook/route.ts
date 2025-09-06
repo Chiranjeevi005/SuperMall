@@ -41,17 +41,24 @@ export async function POST(request: NextRequest) {
     const body = await request.text();
     const sig = request.headers.get('stripe-signature') as string;
     
+    // Validate required environment variables
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      logger.error('STRIPE_WEBHOOK_SECRET environment variable is not set');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+    
     // Verify webhook signature
     let event: Stripe.Event;
     try {
       event = getStripe().webhooks.constructEvent(
         body,
         sig,
-        process.env.STRIPE_WEBHOOK_SECRET!
+        process.env.STRIPE_WEBHOOK_SECRET
       );
     } catch (err: any) {
       logger.error('Webhook signature verification failed', { error: err.message });
-      return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+      // Don't expose internal error details to users
+      return NextResponse.json({ error: 'Webhook verification failed' }, { status: 400 });
     }
 
     // Handle the event
@@ -63,7 +70,14 @@ export async function POST(request: NextRequest) {
         try {
           // Try to update order status in database
           const connection = await dbConnect();
-          if (connection.connection?.readyState === 1) {
+          
+          // Validate database connection
+          if (!connection || !connection.connection) {
+            logger.error('Database connection failed in webhook handler for payment_intent.succeeded');
+            break;
+          }
+          
+          if (connection.connection.readyState === 1) {
             const updatedOrder = await Order.findOneAndUpdate(
               { paymentIntentId: paymentIntentSucceeded.id },
               { 
@@ -80,7 +94,7 @@ export async function POST(request: NextRequest) {
             }
           }
         } catch (dbError) {
-          console.warn('Failed to update order status (continuing anyway):', dbError);
+          logger.error('Failed to update order status in webhook handler for payment_intent.succeeded', { error: dbError });
         }
         break;
         
@@ -91,7 +105,14 @@ export async function POST(request: NextRequest) {
         try {
           // Try to update order status in database
           const connection = await dbConnect();
-          if (connection.connection?.readyState === 1) {
+          
+          // Validate database connection
+          if (!connection || !connection.connection) {
+            logger.error('Database connection failed in webhook handler for payment_intent.payment_failed');
+            break;
+          }
+          
+          if (connection.connection.readyState === 1) {
             const failedOrder = await Order.findOneAndUpdate(
               { paymentIntentId: paymentIntentFailed.id },
               { 
@@ -108,7 +129,7 @@ export async function POST(request: NextRequest) {
             }
           }
         } catch (dbError) {
-          console.warn('Failed to update order status (continuing anyway):', dbError);
+          logger.error('Failed to update order status in webhook handler for payment_intent.payment_failed', { error: dbError });
         }
         break;
         
@@ -119,7 +140,14 @@ export async function POST(request: NextRequest) {
         try {
           // Try to update order status in database
           const connection = await dbConnect();
-          if (connection.connection?.readyState === 1) {
+          
+          // Validate database connection
+          if (!connection || !connection.connection) {
+            logger.error('Database connection failed in webhook handler for payment_intent.canceled');
+            break;
+          }
+          
+          if (connection.connection.readyState === 1) {
             const canceledOrder = await Order.findOneAndUpdate(
               { paymentIntentId: paymentIntentCanceled.id },
               { 
@@ -136,7 +164,7 @@ export async function POST(request: NextRequest) {
             }
           }
         } catch (dbError) {
-          console.warn('Failed to update order status (continuing anyway):', dbError);
+          logger.error('Failed to update order status in webhook handler for payment_intent.canceled', { error: dbError });
         }
         break;
         
@@ -147,6 +175,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error: any) {
     logger.error('Error processing webhook', { error: error.message });
-    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
+    // Don't expose internal error details to users
+    return NextResponse.json({ received: true }, { status: 200 });
   }
 }
