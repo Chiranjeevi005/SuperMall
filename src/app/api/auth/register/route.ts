@@ -7,6 +7,11 @@ import { errorHandlers } from '@/utils/errorHandler';
 import logger from '@/utils/logger';
 
 export async function POST(request: NextRequest) {
+  // During build time, return a mock response
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.json({ message: 'Register endpoint - build phase' });
+  }
+  
   try {
     await dbConnect();
     

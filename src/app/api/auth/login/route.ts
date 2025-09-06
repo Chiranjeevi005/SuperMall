@@ -8,14 +8,15 @@ import logger from '@/utils/logger';
 
 export async function POST(request: NextRequest) {
   try {
-    // Try to connect to database, but don't fail during build time
+    // During build time, return a mock response
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return NextResponse.json({ message: 'Login endpoint - build phase' });
+    }
+    
+    // Try to connect to database
     try {
       await dbConnect();
     } catch (dbError) {
-      // If we're in build phase, return a mock response
-      if (process.env.NEXT_PHASE === 'phase-production-build') {
-        return NextResponse.json({ message: 'Login endpoint - build phase' });
-      }
       throw dbError;
     }
     

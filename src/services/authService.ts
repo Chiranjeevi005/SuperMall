@@ -3,15 +3,6 @@ import { IUser } from '@/models/User';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 
-// Validate that required environment variables are set
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required');
-}
-
-if (!process.env.REFRESH_TOKEN_SECRET) {
-  throw new Error('REFRESH_TOKEN_SECRET environment variable is required');
-}
-
 export interface JwtPayload {
   id: string;
   email: string;
@@ -20,8 +11,29 @@ export interface JwtPayload {
   exp?: number;
 }
 
+// Helper function to validate environment variables
+const validateEnvVars = () => {
+  // During build time, skip validation
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return true;
+  }
+  
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  
+  if (!process.env.REFRESH_TOKEN_SECRET) {
+    throw new Error('REFRESH_TOKEN_SECRET environment variable is required');
+  }
+  
+  return true;
+};
+
 // Generate access token (short-lived)
 export const generateAccessToken = (user: IUser): string => {
+  // Validate environment variables
+  validateEnvVars();
+  
   const payload: JwtPayload = {
     id: (user._id as mongoose.Types.ObjectId).toString(),
     email: user.email,
@@ -33,7 +45,12 @@ export const generateAccessToken = (user: IUser): string => {
     throw new Error('Invalid user data for token generation');
   }
 
+  // Validate JWT_SECRET is set
   if (!process.env.JWT_SECRET) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      // During build, return a mock token
+      return 'mock-jwt-token';
+    }
     throw new Error('JWT_SECRET environment variable is not set');
   }
   
@@ -44,6 +61,9 @@ export const generateAccessToken = (user: IUser): string => {
 
 // Generate refresh token (long-lived)
 export const generateRefreshToken = (user: IUser): string => {
+  // Validate environment variables
+  validateEnvVars();
+  
   const payload: JwtPayload = {
     id: (user._id as mongoose.Types.ObjectId).toString(),
     email: user.email,
@@ -55,7 +75,12 @@ export const generateRefreshToken = (user: IUser): string => {
     throw new Error('Invalid user data for token generation');
   }
 
+  // Validate REFRESH_TOKEN_SECRET is set
   if (!process.env.REFRESH_TOKEN_SECRET) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      // During build, return a mock token
+      return 'mock-refresh-token';
+    }
     throw new Error('REFRESH_TOKEN_SECRET environment variable is not set');
   }
   
@@ -77,7 +102,15 @@ export const verifyAccessToken = (token: string): JwtPayload | null => {
       return null;
     }
 
+    // Validate environment variables
+    validateEnvVars();
+    
+    // Validate JWT_SECRET is set
     if (!process.env.JWT_SECRET) {
+      if (process.env.NEXT_PHASE === 'phase-production-build') {
+        // During build, return null
+        return null;
+      }
       throw new Error('JWT_SECRET environment variable is not set');
     }
     
@@ -103,7 +136,15 @@ export const verifyRefreshToken = (token: string): JwtPayload | null => {
       return null;
     }
 
+    // Validate environment variables
+    validateEnvVars();
+    
+    // Validate REFRESH_TOKEN_SECRET is set
     if (!process.env.REFRESH_TOKEN_SECRET) {
+      if (process.env.NEXT_PHASE === 'phase-production-build') {
+        // During build, return null
+        return null;
+      }
       throw new Error('REFRESH_TOKEN_SECRET environment variable is not set');
     }
     
